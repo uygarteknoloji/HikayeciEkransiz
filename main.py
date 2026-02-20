@@ -1,9 +1,10 @@
-from gpiozero import Button
-from signal import pause
+# main.py
 import os
 import random
-import subprocess
 import time
+from gpiozero import Button
+from signal import pause
+from aclass_printer import AClassPrinter
 
 BASE_DIR = "/home/admin/HikayeciEkransiz"
 
@@ -13,11 +14,17 @@ BUTTON_FOLDERS = {
     4: "io4"
 }
 
+# Yazıcıyı tek kez oluştur
+printer = AClassPrinter(
+    port="/dev/usb/lp0",   # veya /dev/ttyUSB0
+    baudrate=9600
+)
+
 def print_random_file(folder_name):
     folder_path = os.path.join(BASE_DIR, folder_name)
 
     if not os.path.isdir(folder_path):
-        print(f"Klasï¿½r yok: {folder_path}")
+        print(f"Klasör yok: {folder_path}")
         return
 
     txt_files = [
@@ -26,26 +33,30 @@ def print_random_file(folder_name):
     ]
 
     if not txt_files:
-        print(f"{folder_name} iï¿½inde txt yok")
+        print(f"{folder_name} içinde txt yok")
         return
 
     selected = random.choice(txt_files)
     file_path = os.path.join(folder_path, selected)
 
-    print(f"Yazdï¿½rï¿½lï¿½yor: {file_path}")
-    subprocess.run(["lp", file_path])
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
 
-# Butonlarï¿½ oluï¿½tur
+        print(f"AClass yazıcıya gönderiliyor: {selected}")
+        printer.print_text(content)
+
+    except Exception as e:
+        print(f"Yazdırma hatası: {e}")
+
+# Butonlar
 buttons = []
 
 for pin, folder in BUTTON_FOLDERS.items():
     btn = Button(pin, pull_up=True, bounce_time=0.3)
-
-    # lambda iï¿½inde default arg kullanï¿½yoruz (closure bug ï¿½nlemi)
     btn.when_pressed = lambda f=folder: print_random_file(f)
-
     buttons.append(btn)
 
-print("Sistem hazï¿½r (gpiozero)...")
+print("AClass + gpiozero sistem hazır")
 
-pause()  # programï¿½ ayakta tutar
+pause()
