@@ -1,12 +1,10 @@
 # aclass_printer.py
-import serial
 
 class AClassPrinter:
-    def __init__(self, port="/dev/usb/lp0", baudrate=9600):
-        self.port = port
-        self.baudrate = baudrate
+    def __init__(self, device="/dev/usb/lp0"):
+        self.device = device
 
     def print_text(self, text: str):
-        with serial.Serial(self.port, self.baudrate, timeout=1) as ser:
-            ser.write(text.encode("utf-8"))
-            ser.write(b"\n\n")
+        with open(self.device, "wb") as printer:
+            printer.write(text.encode("utf-8"))
+            printer.write(b"\n\n")   # kağıt ilerlet
