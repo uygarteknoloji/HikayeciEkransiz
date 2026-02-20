@@ -75,21 +75,22 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
     logo_img = None
     logo_height = 0
     if os.path.exists(LOGO_PATH):
-        # Logoyu aç ve arka planı beyaz yap (şeffaflığı öldür)
+        # Logoyu aç ve şeffaflığı beyazla değiştir
         logo_raw = Image.open(LOGO_PATH).convert("RGBA")
         white_bg = Image.new("RGBA", logo_raw.size, (255, 255, 255, 255))
         logo_combined = Image.alpha_composite(white_bg, logo_raw).convert("L")
         
         # Boyutlandırma
+        new_logo_width = 350 # Biraz daha heybetli dursun
         logo_aspect = logo_combined.height / logo_combined.width
-        new_logo_width = 300 # Görünür olması için biraz büyüttük
         logo_height = int(new_logo_width * logo_aspect)
         logo_img = logo_combined.resize((new_logo_width, logo_height), Image.Resampling.LANCZOS)
 
-        # KRİTİK NOKTA: Grileri siyah-beyaz noktalara çevir (Dithering)
-        # Bu işlem gri kısımları minik noktalarla basarak griymiş gibi gösterir
-        logo_img = logo_img.point(lambda x: 0 if x < 128 else 255, '1') 
-        logo_img = logo_img.convert("L") # Ana resme yapıştırmak için geri çevir
+        # KOYULAŞTIRMA AYARI: 
+        # Değeri (80) ne kadar düşürürsen o kadar çok gri alan SİYAHA dönüşür.
+        # Eğer hala çok açıksa 60 yapabilirsin.
+        logo_img = logo_img.point(lambda x: 0 if x < 100 else 255, '1') 
+        logo_img = logo_img.convert("L")
 
     total_height = (
         MARGIN_Y + title_height + 20 +
