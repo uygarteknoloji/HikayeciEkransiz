@@ -75,12 +75,21 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
     logo_img = None
     logo_height = 0
     if os.path.exists(LOGO_PATH):
-        logo_img = Image.open(LOGO_PATH).convert("L")
-        # Logoyu yazıcı genişliğine göre orantılı boyutlandır (isteğe bağlı)
-        logo_aspect = logo_img.height / logo_img.width
-        new_logo_width = 200 # Logonun çok büyük olmaması için sabit genişlik
+        # Logoyu aç ve arka planı beyaz yap (şeffaflığı öldür)
+        logo_raw = Image.open(LOGO_PATH).convert("RGBA")
+        white_bg = Image.new("RGBA", logo_raw.size, (255, 255, 255, 255))
+        logo_combined = Image.alpha_composite(white_bg, logo_raw).convert("L")
+        
+        # Boyutlandırma
+        logo_aspect = logo_combined.height / logo_combined.width
+        new_logo_width = 300 # Görünür olması için biraz büyüttük
         logo_height = int(new_logo_width * logo_aspect)
-        logo_img = logo_img.resize((new_logo_width, logo_height))
+        logo_img = logo_combined.resize((new_logo_width, logo_height), Image.Resampling.LANCZOS)
+
+        # KRİTİK NOKTA: Grileri siyah-beyaz noktalara çevir (Dithering)
+        # Bu işlem gri kısımları minik noktalarla basarak griymiş gibi gösterir
+        logo_img = logo_img.point(lambda x: 0 if x < 128 else 255, '1') 
+        logo_img = logo_img.convert("L") # Ana resme yapıştırmak için geri çevir
 
     total_height = (
         MARGIN_Y + title_height + 20 +
