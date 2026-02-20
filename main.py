@@ -41,9 +41,11 @@ def print_random_file(folder_name):
             content = f.read()
 
         print(f"AClass yazıcıya gönderiliyor: {selected}")
+        content += "\n" * 6
+        content += "\f"
+        content = content.encode("cp857", errors="replace")
         printer.print_text(content)
-        printer.write(b"\n\n\n\n")   # kağıt ilerlet
-        printer.write(b"\x1d\x56\x00")  # CUT
+        printer.cut_paper()  # Kağıt kesme komutu
 
     except Exception as e:
         print(f"Yazdırma hatası: {e}")
