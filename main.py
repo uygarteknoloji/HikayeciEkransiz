@@ -89,7 +89,7 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
         # KOYULAŞTIRMA AYARI: 
         # Değeri (80) ne kadar düşürürsen o kadar çok gri alan SİYAHA dönüşür.
         # Eğer hala çok açıksa 60 yapabilirsin.
-        logo_img = logo_img.point(lambda x: 0 if x < 100 else 255, '1') 
+        logo_img = logo_img.point(lambda x: 0 if x < 60 else 255, '1') 
         logo_img = logo_img.convert("L")
 
     total_height = (
