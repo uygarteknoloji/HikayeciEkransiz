@@ -15,10 +15,7 @@ BUTTON_FOLDERS = {
 }
 
 # Yazıcıyı tek kez oluştur
-printer = AClassPrinter(
-    port="/dev/usb/lp0",   # veya /dev/ttyUSB0
-    baudrate=9600
-)
+printer = AClassPrinter()
 
 def print_random_file(folder_name):
     folder_path = os.path.join(BASE_DIR, folder_name)
@@ -45,6 +42,8 @@ def print_random_file(folder_name):
 
         print(f"AClass yazıcıya gönderiliyor: {selected}")
         printer.print_text(content)
+        printer.write(b"\n\n\n\n")   # kağıt ilerlet
+        printer.write(b"\x1d\x56\x00")  # CUT
 
     except Exception as e:
         print(f"Yazdırma hatası: {e}")

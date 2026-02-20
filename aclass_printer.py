@@ -6,5 +6,5 @@ class AClassPrinter:
 
     def print_text(self, text: str):
         with open(self.device, "wb") as printer:
-            printer.write(text.encode("utf-8"))
+            printer.write(text.encode("cp1254", errors="replace"))
             printer.write(b"\n\n")   # kağıt ilerlet
