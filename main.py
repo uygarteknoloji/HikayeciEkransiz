@@ -1,10 +1,23 @@
 # main.py
 import os
 import random
-import time
+import textwrap
 from gpiozero import Button
 from signal import pause
 from aclass_printer import AClassPrinter
+from escpos.printer import Usb
+from PIL import Image, ImageDraw, ImageFont
+
+TITLE_FONT_SIZE = 34
+BODY_FONT_SIZE = 24
+LINE_SPACING = 10
+
+title_font = ImageFont.truetype(
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", TITLE_FONT_SIZE
+)
+body_font = ImageFont.truetype(
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", BODY_FONT_SIZE
+)
 
 BASE_DIR = "/home/admin/HikayeciEkransiz"
 
@@ -14,8 +27,78 @@ BUTTON_FOLDERS = {
     4: "io4"
 }
 
-# Yazıcıyı tek kez oluştur
-printer = AClassPrinter()
+printer = Usb(
+    idVendor=0x0483,   # örnek → KENDİ YAZICINA GÖRE DEĞİŞTİR
+    idProduct=0x5740,  # örnek → KENDİ YAZICINA GÖRE DEĞİŞTİR
+    in_ep=0x81,
+    out_ep=0x01
+)
+
+def print_image_to_printer(image_path):
+    printer.image(image_path)
+    printer.cut()
+
+def text_to_image_80mm(file_path, output_path="print_temp.png"):
+    WIDTH = 560  # 80mm güvenli alan
+    MARGIN_X = 20
+    MARGIN_Y = 20
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.read().splitlines()
+
+    title = lines[0]
+    body = lines[1:]
+
+    wrapped_body = []
+    for line in body:
+        wrapped_body.extend(textwrap.wrap(
+            line, width=55, replace_whitespace=False
+        ) or [""])
+
+    title_height = title_font.getbbox("Ay")[3]
+    body_height = body_font.getbbox("Ay")[3]
+
+    total_height = (
+        MARGIN_Y +
+        title_height + 20 +
+        len(wrapped_body) * (body_height + LINE_SPACING) +
+        40
+    )
+
+    img = Image.new("L", (WIDTH, total_height), 255)
+    draw = ImageDraw.Draw(img)
+
+    # 🔹 Başlık (ortalanmış)
+    title_width = draw.textlength(title, font=title_font)
+    draw.text(
+        ((WIDTH - title_width) // 2, MARGIN_Y),
+        title,
+        font=title_font,
+        fill=0
+    )
+
+    y = MARGIN_Y + title_height + 20
+
+    # 🔹 Gövde
+    for line in wrapped_body:
+        draw.text(
+            (MARGIN_X, y),
+            line,
+            font=body_font,
+            fill=0
+        )
+        y += body_height + LINE_SPACING
+
+    # 🔹 Otomatik ayraç
+    draw.line(
+        (MARGIN_X, y + 10, WIDTH - MARGIN_X, y + 10),
+        fill=0,
+        width=2
+    )
+
+    img.save(output_path)
+
+
 
 def print_random_file(folder_name):
     folder_path = os.path.join(BASE_DIR, folder_name)
@@ -37,16 +120,9 @@ def print_random_file(folder_name):
     file_path = os.path.join(folder_path, selected)
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        print(f"AClass yazıcıya gönderiliyor: {selected}")
-        content += "\n" * 6
-        content += "\f"
-        content = content.encode("cp857", errors="replace")
-        printer.print_text(content)
-        printer.cut_paper()  # Kağıt kesme komutu
-
+        text_to_image_80mm(file_path, "print_temp.png")
+        print_image_to_printer("print_temp.png")
+        print(f"Yazdırıldı: {selected}")
     except Exception as e:
         print(f"Yazdırma hatası: {e}")
 
