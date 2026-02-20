@@ -4,7 +4,6 @@ import random
 import textwrap
 from gpiozero import Button
 from signal import pause
-from aclass_printer import AClassPrinter
 from escpos.printer import Usb
 from PIL import Image, ImageDraw, ImageFont
 
@@ -28,8 +27,8 @@ BUTTON_FOLDERS = {
 }
 
 printer = Usb(
-    idVendor=0x0483,   # örnek → KENDİ YAZICINA GÖRE DEĞİŞTİR
-    idProduct=0x5740,  # örnek → KENDİ YAZICINA GÖRE DEĞİŞTİR
+    idVendor=0x0483,   # Ã¶rnek â†’ KENDÄ° YAZICINA GÃ–RE DEÄÄ°ÅTÄ°R
+    idProduct=0x5740,  # Ã¶rnek â†’ KENDÄ° YAZICINA GÃ–RE DEÄÄ°ÅTÄ°R
     in_ep=0x81,
     out_ep=0x01
 )
@@ -39,7 +38,7 @@ def print_image_to_printer(image_path):
     printer.cut()
 
 def text_to_image_80mm(file_path, output_path="print_temp.png"):
-    WIDTH = 560  # 80mm güvenli alan
+    WIDTH = 560  # 80mm gÃ¼venli alan
     MARGIN_X = 20
     MARGIN_Y = 20
 
@@ -68,7 +67,7 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
     img = Image.new("L", (WIDTH, total_height), 255)
     draw = ImageDraw.Draw(img)
 
-    # 🔹 Başlık (ortalanmış)
+    # ğŸ”¹ BaÅŸlÄ±k (ortalanmÄ±ÅŸ)
     title_width = draw.textlength(title, font=title_font)
     draw.text(
         ((WIDTH - title_width) // 2, MARGIN_Y),
@@ -79,7 +78,7 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
 
     y = MARGIN_Y + title_height + 20
 
-    # 🔹 Gövde
+    # ğŸ”¹ GÃ¶vde
     for line in wrapped_body:
         draw.text(
             (MARGIN_X, y),
@@ -89,7 +88,7 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
         )
         y += body_height + LINE_SPACING
 
-    # 🔹 Otomatik ayraç
+    # ğŸ”¹ Otomatik ayraÃ§
     draw.line(
         (MARGIN_X, y + 10, WIDTH - MARGIN_X, y + 10),
         fill=0,
@@ -104,7 +103,7 @@ def print_random_file(folder_name):
     folder_path = os.path.join(BASE_DIR, folder_name)
 
     if not os.path.isdir(folder_path):
-        print(f"Klasör yok: {folder_path}")
+        print(f"KlasÃ¶r yok: {folder_path}")
         return
 
     txt_files = [
@@ -113,7 +112,7 @@ def print_random_file(folder_name):
     ]
 
     if not txt_files:
-        print(f"{folder_name} içinde txt yok")
+        print(f"{folder_name} iÃ§inde txt yok")
         return
 
     selected = random.choice(txt_files)
@@ -122,9 +121,9 @@ def print_random_file(folder_name):
     try:
         text_to_image_80mm(file_path, "print_temp.png")
         print_image_to_printer("print_temp.png")
-        print(f"Yazdırıldı: {selected}")
+        print(f"YazdÄ±rÄ±ldÄ±: {selected}")
     except Exception as e:
-        print(f"Yazdırma hatası: {e}")
+        print(f"YazdÄ±rma hatasÄ±: {e}")
 
 # Butonlar
 buttons = []
@@ -134,6 +133,6 @@ for pin, folder in BUTTON_FOLDERS.items():
     btn.when_pressed = lambda f=folder: print_random_file(f)
     buttons.append(btn)
 
-print("AClass + gpiozero sistem hazır")
+print("AClass + gpiozero sistem hazÄ±r")
 
 pause()
