@@ -8,8 +8,8 @@ from escpos.printer import Usb
 from PIL import Image, ImageDraw, ImageFont
 from threading import Thread
 
-TITLE_FONT_SIZE = 24
-BODY_FONT_SIZE = 12
+TITLE_FONT_SIZE = 16
+BODY_FONT_SIZE = 10
 LINE_SPACING = 10
 
 
