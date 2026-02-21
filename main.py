@@ -124,7 +124,7 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
 
     print(y, logo_img.height)
     y += 100
-    draw.text((100, y), "Bursa 700.YÄ±l Fetih HatÄ±rasÄ±", font=title_font, fill=0)
+    draw.text((100, y), "Bursa 700.Yıl Fetih Hatırası", font=title_font, fill=0)
 
     img.save(output_path)
 
