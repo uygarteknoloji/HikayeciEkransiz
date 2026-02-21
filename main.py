@@ -15,14 +15,15 @@ LINE_SPACING = 10
 
 
 title_font = ImageFont.truetype(
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", TITLE_FONT_SIZE
+    #"/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", TITLE_FONT_SIZE
+    "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf", TITLE_FONT_SIZE
 )
 body_font = ImageFont.truetype(
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", BODY_FONT_SIZE
+    "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf", BODY_FONT_SIZE
 )
 
 BASE_DIR = "/home/admin/HikayeciEkransiz"
-LOGO_PATH = "/home/admin/HikayeciEkransiz/logo.png" # Logo dosyanın yolu
+LOGO_PATH = "/home/admin/HikayeciEkransiz/logo.png" # Logo dosyanÄ±n yolu
 
 BUTTON_FOLDERS = {
     2: "io2",
@@ -30,13 +31,13 @@ BUTTON_FOLDERS = {
     4: "io4"
 }
 
-# Mevcut satï¿½rï¿½ ï¿½ununla deï¿½iï¿½tirmeyi dene:
+# Mevcut satÃ¯Â¿Â½rÃ¯Â¿Â½ Ã¯Â¿Â½ununla deÃ¯Â¿Â½iÃ¯Â¿Â½tirmeyi dene:
 printer = Usb(
     0x0483, 
     0x5840, 
     in_ep=0x81, 
     out_ep=0x03, 
-    profile="TM-T88V" # Genel bir 80mm profili iï¿½ gï¿½recektir
+    profile="TM-T88V" # Genel bir 80mm profili iÃ¯Â¿Â½ gÃ¯Â¿Â½recektir
 )
 
 def handle_button(folder):
@@ -54,9 +55,9 @@ def print_image_to_printer(image_path):
     time.sleep(0.2)
 
 def text_to_image_80mm(file_path, output_path="print_temp.png"):
-    WIDTH = 512 # Daha önce belirlediğimiz çalışan genişlik
+    WIDTH = 512 # Daha Ã¶nce belirlediÄŸimiz Ã§alÄ±ÅŸan geniÅŸlik
     MARGIN_X = 5
-    MARGIN_Y = 5
+    MARGIN_Y = 20
 
     with open(file_path, "r", encoding="utf-8") as f:
         lines = f.read().splitlines()
@@ -66,53 +67,53 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
 
     wrapped_body = []
     for line in body:
-        wrapped_body.extend(textwrap.wrap(line, width=45, replace_whitespace=False) or [""])
+        wrapped_body.extend(textwrap.wrap(line, width=50, replace_whitespace=False) or [""])
 
     title_height = title_font.getbbox("Ay")[3]
     body_height = body_font.getbbox("Ay")[3]
     
-    # Logo yüksekliğini hesapla
+    # Logo yÃ¼ksekliÄŸini hesapla
     logo_img = None
     logo_height = 0
     if os.path.exists(LOGO_PATH):
-        # Logoyu aç ve şeffaflığı beyazla değiştir
+        # Logoyu aÃ§ ve ÅŸeffaflÄ±ÄŸÄ± beyazla deÄŸiÅŸtir
         logo_raw = Image.open(LOGO_PATH).convert("RGBA")
         white_bg = Image.new("RGBA", logo_raw.size, (255, 255, 255, 255))
         logo_combined = Image.alpha_composite(white_bg, logo_raw).convert("L")
         
-        # Boyutlandırma
+        # BoyutlandÄ±rma
         new_logo_width = 350 # Biraz daha heybetli dursun
         logo_aspect = logo_combined.height / logo_combined.width
         logo_height = int(new_logo_width * logo_aspect)
         logo_img = logo_combined.resize((new_logo_width, logo_height), Image.Resampling.LANCZOS)
 
-        # KOYULAŞTIRMA AYARI: 
-        # Değeri (80) ne kadar düşürürsen o kadar çok gri alan SİYAHA dönüşür.
-        # Eğer hala çok açıksa 60 yapabilirsin.
+        # KOYULAÅTIRMA AYARI: 
+        # DeÄŸeri (80) ne kadar dÃ¼ÅŸÃ¼rÃ¼rsen o kadar Ã§ok gri alan SÄ°YAHA dÃ¶nÃ¼ÅŸÃ¼r.
+        # EÄŸer hala Ã§ok aÃ§Ä±ksa 60 yapabilirsin.
         logo_img = logo_img.point(lambda x: 0 if x < 160 else 255, '1') 
         logo_img = logo_img.convert("L")
 
     total_height = (
         MARGIN_Y + title_height + 20 +
         len(wrapped_body) * (body_height + LINE_SPACING) +
-        40 + logo_height + 40 # Logo alanı ve boşluklar
+        40 + logo_height + 40 # Logo alanÄ± ve boÅŸluklar
     )
 
     img = Image.new("L", (WIDTH, total_height), 255)
     draw = ImageDraw.Draw(img)
 
-    # Başlık
+    # BaÅŸlÄ±k
     title_width = draw.textlength(title, font=title_font)
     draw.text(((WIDTH - title_width) // 2, MARGIN_Y), title, font=title_font, fill=0)
 
     y = MARGIN_Y + title_height + 20
 
-    # Gövde
+    # GÃ¶vde
     for line in wrapped_body:
         draw.text((MARGIN_X, y), line, font=body_font, fill=0)
         y += body_height + LINE_SPACING
 
-    # Ayraç Çizgisi
+    # AyraÃ§ Ã‡izgisi
     draw.line((MARGIN_X, y + 10, WIDTH - MARGIN_X, y + 10), fill=0, width=2)
     y += 30
 
@@ -120,6 +121,10 @@ def text_to_image_80mm(file_path, output_path="print_temp.png"):
     if logo_img:
         logo_x = (WIDTH - logo_img.width) // 2 # Ortala
         img.paste(logo_img, (logo_x, y))
+
+    print(y, logo_img.height)
+    y += 100
+    draw.text((100, y), "Bursa 700.YÄ±l Fetih HatÄ±rasÄ±", font=title_font, fill=0)
 
     img.save(output_path)
 
@@ -129,7 +134,7 @@ def print_random_file(folder_name):
     folder_path = os.path.join(BASE_DIR, folder_name)
 
     if not os.path.isdir(folder_path):
-        print(f"KlasÃƒÂ¶r yok: {folder_path}")
+        print(f"KlasÃƒÆ’Ã‚Â¶r yok: {folder_path}")
         return
 
     txt_files = [
@@ -138,25 +143,25 @@ def print_random_file(folder_name):
     ]
 
     if not txt_files:
-        print(f"{folder_name} iÃƒÂ§inde txt yok")
+        print(f"{folder_name} iÃƒÆ’Ã‚Â§inde txt yok")
         return
 
     selected = random.choice(txt_files)
     file_path = os.path.join(folder_path, selected)
 
-    # print_random_file fonksiyonundaki try-except bloï¿½unu bï¿½yle gï¿½ncelle:
+    # print_random_file fonksiyonundaki try-except bloÃ¯Â¿Â½unu bÃ¯Â¿Â½yle gÃ¯Â¿Â½ncelle:
     try:
         output = f"/tmp/print_{os.getpid()}_{random.randint(1000,9999)}.png"
         text_to_image_80mm(file_path, output)
-        print_image_to_printer(output)  # Bu satï¿½r yeterli
+        print_image_to_printer(output)  # Bu satÃ¯Â¿Â½r yeterli
         
-        # Geï¿½ici dosyayï¿½ temizle
+        # GeÃ¯Â¿Â½ici dosyayÃ¯Â¿Â½ temizle
         if os.path.exists(output):
             os.remove(output)
             
-        print(f"Baï¿½arï¿½yla yazdï¿½rï¿½ldï¿½: {selected}")
+        print(f"BaÃ¯Â¿Â½arÃ¯Â¿Â½yla yazdÃ¯Â¿Â½rÃ¯Â¿Â½ldÃ¯Â¿Â½: {selected}")
     except Exception as e:
-        print(f"Yazdï¿½rma hatasï¿½ oluï¿½tu: {e}")
+        print(f"YazdÃ¯Â¿Â½rma hatasÃ¯Â¿Â½ oluÃ¯Â¿Â½tu: {e}")
 
 # Butonlar
 buttons = []
@@ -166,6 +171,6 @@ for pin, folder in BUTTON_FOLDERS.items():
     btn.when_pressed = lambda f=folder: handle_button(f)
     buttons.append(btn)
 
-print("AClass + gpiozero sistem hazÃ„Â±r")
+print("AClass + gpiozero sistem hazÃƒâ€Ã‚Â±r")
 
 pause()
