@@ -54,7 +54,7 @@ def print_image_to_printer(image_path):
     time.sleep(0.2)
 
 def text_to_image_80mm(file_path, output_path="print_temp.png"):
-    WIDTH = 512 # Daha önce belirlediğimiz çalışan genişlik
+    WIDTH = 532 # Daha önce belirlediğimiz çalışan genişlik
     MARGIN_X = 20
     MARGIN_Y = 20
 
