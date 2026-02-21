@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 from threading import Thread
 
 TITLE_FONT_SIZE = 24
-BODY_FONT_SIZE = 18
+BODY_FONT_SIZE = 22
 LINE_SPACING = 10
 
 
